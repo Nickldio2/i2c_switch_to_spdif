@@ -1,0 +1,42 @@
+#include <PinChangeInterrupt.h>
+#include <PinChangeInterruptBoards.h>
+#include <PinChangeInterruptPins.h>
+#include <PinChangeInterruptSettings.h>
+
+#include <Wire.h>
+
+#define pinBlink 19
+
+unsigned long currentMillis = 0;
+
+void setup() {
+
+  Serial.begin(115200);
+  pinMode(pinBlink, INPUT_PULLUP);
+  attachPCINT(digitalPinToPCINT(pinBlink), blinkLed, CHANGE);
+  
+}
+
+void loop() {
+  
+}
+
+
+void blinkLed(void){
+
+  currentMillis = millis() - currentMillis;
+  
+  if (currentMillis > 40){
+    Serial.println(currentMillis);
+    detachPCINT(digitalPinToPCINT(pinBlink));
+    Wire.begin(0x99);
+    Wire.beginTransmission(0x1C); // transmit to device with address "0x1C"
+    Wire.write(0x2B);              // sends data
+    Wire.endTransmission();    // stop transmitting
+    Wire.end();
+    attachPCINT(digitalPinToPCINT(pinBlink), blinkLed, CHANGE);
+  }
+  
+  currentMillis = millis();
+  
+}
